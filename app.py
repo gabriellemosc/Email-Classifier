@@ -1,15 +1,101 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template
 import os
-#import PyPDF2
+from werkzeug.exceptions import RequestEntityTooLarge       #errors: FILE TOO LARGE,
+import logging  
+from werkzeug.utils import secure_filename      #security against malicious files by user
+import PyPDF2                                      #read PDF
 #from classifiers.email_classifier import classify_email
 #from classifiers.response_generator import generate_response
 
 
 app = Flask(__name__)
 
+# TODO: APP KEY
+
+
+#configs
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 #16 MB allowed
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS  # check extension 
+
 @app.route('/')
 def home():
-    return "Running"
+    return render_template("index.html")    #main html
 
-if __name__ == '__main__':
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(e):
+    return render_template("index.html", error="File too large. Upload a smaller one. Max 16MB"), 413
+
+
+def create_upload_folder():
+    """ if not exists, create"""
+    if not os.path.exists(UPLOAD_FOLDER):
+         os.makedirs(UPLOAD_FOLDER)
+         logging.warning("UPLOAD FOLDEDR CREATED")
+
+
+@app.route('/process', methods=['POST'])
+def process_email():
+    content = ""
+
+    email_text = request.form.get("email_text")
+    file = request.files.get("file")
+
+    #pasted text
+    if email_text and email_text.strip():
+        content = email_text.strip()     
+
+    elif file and allowed_file(file.filename):
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        #read text file
+        if filename.endswith(".txt"):
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+
+        #case of PDF
+        elif filename.endswith(".pdf"):
+            content = ""
+            reader = PyPDF2.PdfReader(filepath)
+            for page in reader.pages:
+                extracted = page.extract_text() or ""
+                content += extracted
+
+        #temp file
+        os.remove(filepath)
+
+    else:
+        return render_template("index.html", error="You must paste text or upload a valid .txt/.pdf file")
+    
+
+    #no content
+    if not content.strip():
+        return render_template("index.html", category= "Error", response="No email context was provided")
+
+    
+    # TODO: ADD NLP + classification + AI RESPONSE HERE
+    category = "Unknown"
+    response = "AI response appear here"
+
+    return render_template("index.html", category=category, response=response)
+
+if __name__ == '__main__' :
+   
+    create_upload_folder()  
+
     app.run(debug=True)
+
+

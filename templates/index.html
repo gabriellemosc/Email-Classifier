@@ -1,0 +1,53 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email Classifier</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+
+    <body>
+
+        <div class="container">
+            <h1>Smart Email Classifier</h1>
+            <p>Upload a file or paste the email content for automatic analysis.</p>
+
+            <!-- FORM -->
+            <form action="/process" method="POST" enctype="multipart/form-data">
+
+                <!-- Text input -->
+                <label for="email_text">Paste email text:</label>
+                <textarea id="email_text" name="email_text" placeholder="Paste the email here..." rows="8"></textarea>
+
+                <div class="divider">or</div>
+
+                <!-- File upload -->
+                <label for="file">Upload .txt or .pdf:</label>
+                <input type="file" name="file" id="file" accept=".txt,.pdf">
+
+                <button type="submit" class="btn">Analyze Email</button>
+            </form>
+
+            <hr>
+
+            <!-- RESULTS AREA  -->
+            {% if category %}
+                <div class="result">
+                    <h2>Classification Result</h2>
+
+                    <p><strong>Category:</strong> {{ category }}</p>
+
+                    <h3>Suggested Response:</h3>
+                    <p class="response">{{ response }}</p>
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <p class="error"> {{error}} </p>
+            {% endif %}
+
+        </div>
+
+    </body>
+    </html>

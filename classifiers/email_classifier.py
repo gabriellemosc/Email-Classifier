@@ -94,21 +94,39 @@ class EmailClassifier:
                 try:        #use OPENAI
                     response = client.responses.create(
                         model="gpt-4o-mini",
-                      input=f"""
+                    input = f"""
                                 Classifique o email abaixo como Produtivo ou Improdutivo.
-                                Siga estas regras:
 
-                                - "Improdutivo" inclui spam, propaganda, promoções, golpes, sorteios,
-                                prêmios, correntes, ofertas suspeitas, assuntos irrelevantes ao trabalho,
-                                mensagens genéricas, marketing e emails que não pedem ação real.
-                                - "Produtivo" é apenas o que exige ação real, tarefa, reunião, documento,
-                                atividade, cliente, chamado, ou comunicação profissional.
+                                Siga exatamente as regras a seguir:
+                                Produtivo significa:
+                                - Solicitação de tarefa, ação ou atividade de trabalho.
+                                - Requisição de documentos, aprovação, relatórios, informações técnicas.
+                                - Reuniões, agendas, prazos, alinhamentos e atividades profissionais.
+                                - Comunicação com cliente, suporte, projeto, equipe ou setor.
+                                - Qualquer e-mail que exija tomada de decisão ou execução prática.
 
-                                Não invente nada, responda apenas "Produtivo" ou "Improdutivo".
+                                 Improdutivo significa:
+                                - Conversa fiada, piadas, memes, brincadeiras, humor, correntes.
+                                - Conteúdo pessoal: “bom dia”, desabafos, conversas informais.
+                                - Spam, phishing, golpes, promoções, propaganda, marketing.
+                                - Mensagens genéricas que não pedem ação real.
+                                - Avisos irrelevantes, notificações superficiais, textos curtos sem propósito.
+                                - Conteúdos motivacionais, reflexões, frases de impacto.
+                                - Histórias, curiosidades, texto narrativo sem pedido de ação.
+                                - Tudo que não envolva trabalho, tarefa ou objetivo profissional.
+
+                                 Regras importantes:
+                                - NÃO crie ação onde não existe.
+                                - NÃO interprete intenção escondida.
+                                - NÃO assuma que uma piada é uma “dinâmica de equipe”.
+                                - Se o email não exigir ação explícitaclassifique como Improdutivo.
+                                - Responda SOMENTE uma palavra: Produtivo ou Improdutivo.
+
 
                                 Email:
                                 {cleaned}
-                                """)
+
+                                """
 
                     result = response.output_text # AI send us back the response
 

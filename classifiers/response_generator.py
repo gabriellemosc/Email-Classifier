@@ -1,8 +1,8 @@
-from preprocess import pre_process_text, extract_keywords
-from email_classifier import EmailClassifier
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+from classifiers.preprocess import pre_process_text, extract_keywords
+from classifiers.email_classifier import EmailClassifier
 
 
 #env: read file and start client connection

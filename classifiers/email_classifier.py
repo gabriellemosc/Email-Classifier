@@ -81,13 +81,13 @@ class EmailClassifier:
     def classify_with_openai(self, text):
                 cleaned = pre_process_text(text)
 
-                try:
+                try:        #use OPENAI
                     response = client.responses.create(
                         model="gpt-4o-mini",
                         input=f"Classifique o email como Produtivo ou Improdutivo:\n\n{cleaned}"
                     )
 
-                    result = response.choices[0].message["content"]  # AI send us back the response
+                    result = response.output_text # AI send us back the response
 
                     if "produtivo" in result.lower():
                         return "Produtivo"
@@ -96,5 +96,12 @@ class EmailClassifier:
                     
                 except Exception as e:
                     print("Fail on OPenAI. Using local fallback", e)
-                    return None
+
+                    try:
+                          vector = self.vectorizer.transform([cleaned])
+                          prediction = self.model.predict(vector)[0]
+                          return prediction
+                    except Exception as e2:
+                          print("Erro no fallback local também", e2)
+                          return None
             

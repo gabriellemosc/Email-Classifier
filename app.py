@@ -41,12 +41,6 @@ def handle_file_too_large(e):
     return render_template("index.html", error="Arquivo muito grande. Tamanho máximo de 16MB"), 413
 
 
-def create_upload_folder():
-    """ if not exists, create"""
-    if not os.path.exists(UPLOAD_FOLDER):
-         os.makedirs(UPLOAD_FOLDER)
-         logging.warning("UPLOAD FOLDEDR CREATED")
-
 
 @app.route('/process', methods=['POST'])
 def process_email():
@@ -101,10 +95,5 @@ def process_email():
 
     return render_template("index.html", category=classification, response=response)
 
-if __name__ == '__main__' :
-   
-    create_upload_folder()  
-
-    app.run(debug=True)
 
 

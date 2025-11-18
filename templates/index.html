@@ -137,15 +137,7 @@
         const fileInput = document.getElementById('file');
         const fileLabel = document.querySelector('.file-label');
 
-        fileInput.addEventListener('change', function(e) {
-            if (this.files.length > 0) {
-                fileLabel.innerHTML = `
-                    <span class="file-icon">📄</span>
-                    <span class="file-text">${this.files[0].name}</span>
-                    <span class="file-size">${(this.files[0].size / 1024 / 1024).toFixed(2)} MB</span>
-                `;
-            }
-        });
+    
 
         // Drag and drop functionality
         fileLabel.addEventListener('dragover', (e) => {

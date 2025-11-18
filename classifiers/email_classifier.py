@@ -126,7 +126,7 @@ class EmailClassifier:
                                 Email:
                                 {cleaned}
 
-                                """
+                                """)
 
                     result = response.output_text # AI send us back the response
 

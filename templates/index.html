@@ -1,53 +1,168 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Email Classifier</title>
-        <link rel="stylesheet" href="/static/style.css">
-    </head>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classificador Inteligente de Emails</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
 
-    <body>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📧</span>
+                <h1>Classificador Inteligente de Emails</h1>
+            </div>
+            <p class="subtitle">Use IA para classificar e responder emails automaticamente</p>
+        </header>
 
-        <div class="container">
-            <h1>Smart Email Classifier</h1>
-            <p>Upload a file or paste the email content for automatic analysis.</p>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Form Section -->
+            <section class="form-section">
+                <div class="card">
+                    <h2>Analisar Email</h2>
+                    <p class="instruction">Faça upload de um arquivo ou cole o conteúdo do email para análise automática</p>
 
-            <!-- FORM -->
-            <form action="/process" method="POST" enctype="multipart/form-data">
+                    <form action="/process" method="POST" enctype="multipart/form-data" class="email-form">
+                        <!-- Text Input -->
+                        <div class="form-group">
+                            <label for="email_text" class="form-label">
+                                <span class="label-icon">📝</span>
+                                Cole o texto do email:
+                            </label>
+                            <textarea 
+                                id="email_text" 
+                                name="email_text" 
+                                placeholder="Cole o conteúdo do email aqui... Exemplo: 'Preciso de ajuda com acesso ao sistema...'" 
+                                rows="6"
+                                class="form-textarea"
+                            ></textarea>
+                        </div>
 
-                <!-- Text input -->
-                <label for="email_text">Paste email text:</label>
-                <textarea id="email_text" name="email_text" placeholder="Paste the email here..." rows="8"></textarea>
+                        <!-- Divider -->
+                        <div class="divider">
+                            <span class="divider-text">ou</span>
+                        </div>
 
-                <div class="divider">or</div>
+                        <!-- File Upload -->
+                        <div class="form-group">
+                            <label for="file" class="form-label">
+                                <span class="label-icon">📎</span>
+                                Upload de arquivo .txt ou .pdf:
+                            </label>
+                            <div class="file-upload-area">
+                                <input type="file" name="file" id="file" accept=".txt,.pdf" class="file-input">
+                                <label for="file" class="file-label">
+                                    <span class="file-icon">📁</span>
+                                    <span class="file-text">Clique para selecionar ou arraste o arquivo</span>
+                                    <span class="file-types">.txt ou .pdf (máx. 16MB)</span>
+                                </label>
+                            </div>
+                        </div>
 
-                <!-- File upload -->
-                <label for="file">Upload .txt or .pdf:</label>
-                <input type="file" name="file" id="file" accept=".txt,.pdf">
-
-                <button type="submit" class="btn">Analyze Email</button>
-            </form>
-
-            <hr>
-
-            <!-- RESULTS AREA  -->
-            {% if category %}
-                <div class="result">
-                    <h2>Classification Result</h2>
-
-                    <p><strong>Category:</strong> {{ category }}</p>
-
-                    <h3>Suggested Response:</h3>
-                    <p class="response">{{ response }}</p>
+                        <!-- Submit Button -->
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-icon">🔍</span>
+                            Analisar Email
+                        </button>
+                    </form>
                 </div>
+            </section>
+
+            <!-- Results Section -->
+            {% if category %}
+            <section class="results-section">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h2>📊 Resultado da Análise</h2>
+                        <div class="category-badge {{ 'productive' if category == 'Produtivo' else 'unproductive' }}">
+                            {{ category }}
+                        </div>
+                    </div>
+
+                    <div class="result-content">
+                        <div class="response-section">
+                            <h3>💡 Resposta Sugerida:</h3>
+                            <div class="response-box">
+                                <p class="response-text">{{ response }}</p>
+                                <button class="copy-btn" onclick="copyToClipboard()">
+                                    <span class="copy-icon">📋</span>
+                                    Copiar Resposta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
             {% endif %}
 
+            <!-- Error Section -->
             {% if error %}
-                <p class="error"> {{error}} </p>
+            <section class="error-section">
+                <div class="error-card">
+                    <div class="error-header">
+                        <span class="error-icon">⚠️</span>
+                        <h3>Erro no Processamento</h3>
+                    </div>
+                    <p class="error-message">{{ error }}</p>
+                </div>
+            </section>
             {% endif %}
+        </main>
 
-        </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by AI • Classificador Automático de Emails</p>
+        </footer>
+    </div>
 
-    </body>
-    </html>
+    <script>
+        // Copy to clipboard function
+        function copyToClipboard() {
+            const responseText = document.querySelector('.response-text').textContent;
+            navigator.clipboard.writeText(responseText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="copy-icon">✅</span> Copiado!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        // File upload drag and drop
+        const fileInput = document.getElementById('file');
+        const fileLabel = document.querySelector('.file-label');
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                fileLabel.innerHTML = `
+                    <span class="file-icon">📄</span>
+                    <span class="file-text">${this.files[0].name}</span>
+                    <span class="file-size">${(this.files[0].size / 1024 / 1024).toFixed(2)} MB</span>
+                `;
+            }
+        });
+
+        // Drag and drop functionality
+        fileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileLabel.classList.add('dragover');
+        });
+
+        fileLabel.addEventListener('dragleave', () => {
+            fileLabel.classList.remove('dragover');
+        });
+
+        fileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileLabel.classList.remove('dragover');
+            fileInput.files = e.dataTransfer.files;
+            fileInput.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
+</html>

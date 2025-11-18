@@ -1,11 +1,10 @@
-from preprocess import pre_process_text, extract_keywords  #my function to pre process
 import os
 from openai import OpenAI
 from dotenv import load_dotenv      #ENV
 import joblib                          #load model
 from sklearn.feature_extraction.text import TfidfVectorizer  # vetorization
 from sklearn.naive_bayes import MultinomialNB      #  local classifer
-
+from classifiers.preprocess import pre_process_text, extract_keywords
 
 
 #env: read file and start client connection
@@ -80,12 +79,36 @@ class EmailClassifier:
 # try to use OPENAI API, else using our fallback 
     def classify_with_openai(self, text):
                 cleaned = pre_process_text(text)
+                cleaned_lower = cleaned.lower()
+
+                SPAM_KEYWORDS = [
+                    "ganhar", "ganhe", "prêmio", "premio", "selecionado", "exclusivo",
+                    "clique aqui", "oferta", "promoção", "promocao", "brinde",
+                    "sorteado", "grátis", "gratis", "dinheiro", "cupom", "crédito",
+                    "credit", "vencedor", "parabéns"
+                ]
+                if any(word in cleaned_lower for word in SPAM_KEYWORDS):
+                    return "Improdutivo"
+                
 
                 try:        #use OPENAI
                     response = client.responses.create(
                         model="gpt-4o-mini",
-                        input=f"Classifique o email como Produtivo ou Improdutivo:\n\n{cleaned}"
-                    )
+                      input=f"""
+                                Classifique o email abaixo como Produtivo ou Improdutivo.
+                                Siga estas regras:
+
+                                - "Improdutivo" inclui spam, propaganda, promoções, golpes, sorteios,
+                                prêmios, correntes, ofertas suspeitas, assuntos irrelevantes ao trabalho,
+                                mensagens genéricas, marketing e emails que não pedem ação real.
+                                - "Produtivo" é apenas o que exige ação real, tarefa, reunião, documento,
+                                atividade, cliente, chamado, ou comunicação profissional.
+
+                                Não invente nada, responda apenas "Produtivo" ou "Improdutivo".
+
+                                Email:
+                                {cleaned}
+                                """)
 
                     result = response.output_text # AI send us back the response
 
@@ -101,6 +124,7 @@ class EmailClassifier:
                           vector = self.vectorizer.transform([cleaned])
                           prediction = self.model.predict(vector)[0]
                           return prediction
+                    
                     except Exception as e2:
                           print("Erro no fallback local também", e2)
                           return None

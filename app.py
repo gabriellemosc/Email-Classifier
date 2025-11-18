@@ -4,13 +4,17 @@ from werkzeug.exceptions import RequestEntityTooLarge       #errors: FILE TOO LA
 import logging  
 from werkzeug.utils import secure_filename      #security against malicious files by user
 import PyPDF2                                      #read PDF
-#from classifiers.email_classifier import classify_email
-#from classifiers.response_generator import generate_response
+from classifiers.response_generator import ResponseGenerator
+from classifiers.preprocess import pre_process_text
+from classifiers.email_classifier import EmailClassifier
 
 
 app = Flask(__name__)
 
 # TODO: APP KEY
+
+
+generator = ResponseGenerator()
 
 
 #configs
@@ -34,7 +38,7 @@ def home():
 
 @app.errorhandler(RequestEntityTooLarge)
 def handle_file_too_large(e):
-    return render_template("index.html", error="File too large. Upload a smaller one. Max 16MB"), 413
+    return render_template("index.html", error="Arquivo muito grande. Tamanho máximo de 16MB"), 413
 
 
 def create_upload_folder():
@@ -78,19 +82,24 @@ def process_email():
         os.remove(filepath)
 
     else:
-        return render_template("index.html", error="You must paste text or upload a valid .txt/.pdf file")
+        return render_template("index.html", error="Você deve dar entrada em um arquivo .txt/.pdf ")
     
 
     #no content
     if not content.strip():
-        return render_template("index.html", category= "Error", response="No email context was provided")
+        return render_template("index.html", category= "Error", response="Sem contexto de email dado")
+    
+    classification = generator.classifier.classify_with_openai(content)
+
+    if classification is None:
+        classification = "Produtivo"
+
+    response = generator.generate_response(content)
 
     
-    # TODO: ADD NLP + classification + AI RESPONSE HERE
-    category = "Unknown"
-    response = "AI response appear here"
+  
 
-    return render_template("index.html", category=category, response=response)
+    return render_template("index.html", category=classification, response=response)
 
 if __name__ == '__main__' :
    
